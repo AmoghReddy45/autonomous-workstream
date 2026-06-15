@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The load-bearing safety check: the pre-push hook contract + the frozen
+      # safety core must hold on every push (both OSes have bash for the hook test).
+      - name: Verify frozen safety core
+        run: python -m autows verify-core
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v

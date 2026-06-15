@@ -14,7 +14,7 @@ import re
 import sys
 import time
 
-from . import audit, config, gitutil, hooks, lessons, prompts
+from . import audit, config, gitutil, hooks, lessons, prompts, safety_core
 from .backends import available, get_backend
 
 
@@ -183,6 +183,27 @@ def cmd_lessons_show(args) -> int:
     return 0
 
 
+def cmd_verify_core(args) -> int:
+    if args.update:
+        path = safety_core.write_manifest()
+        print(f"Wrote frozen-core manifest: {path}")
+        print(f"({len(safety_core.FROZEN_FILES)} files). Commit it so the change is reviewed.")
+        return 0
+    ok, drift = safety_core.verify()
+    if ok:
+        print(f"Frozen safety core OK ({len(safety_core.FROZEN_FILES)} files verified).")
+        return 0
+    print("FROZEN SAFETY CORE DRIFT DETECTED:", file=sys.stderr)
+    if not safety_core.load_manifest():
+        print("  No manifest (autows/safety_core.sha256). Generate it with "
+              "`autows verify-core --update`.", file=sys.stderr)
+    for rel, exp, act in drift:
+        print(f"  {rel}: expected {exp or '(missing)'} got {act}", file=sys.stderr)
+    print("If this change was intentional and reviewed, regenerate with "
+          "`autows verify-core --update`.", file=sys.stderr)
+    return 1
+
+
 def cmd_install_hooks(args) -> int:
     git_root = gitutil.toplevel()
     if not git_root:
@@ -212,6 +233,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("install-hooks", help="install the pre-push safety hook")
     sp.set_defaults(func=cmd_install_hooks)
+
+    sp = sub.add_parser("verify-core", help="verify the frozen safety core hasn't drifted")
+    sp.add_argument("--update", action="store_true",
+                    help="regenerate the manifest after a reviewed safety-core change")
+    sp.set_defaults(func=cmd_verify_core)
 
     sp = sub.add_parser("spawn", help="spawn a low-level headless session")
     g = sp.add_mutually_exclusive_group()

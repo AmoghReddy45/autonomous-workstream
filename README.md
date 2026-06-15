@@ -1,5 +1,7 @@
 # Autonomous Workstream
 
+[![CI](https://github.com/AmoghReddy45/autonomous-workstream/actions/workflows/ci.yml/badge.svg)](https://github.com/AmoghReddy45/autonomous-workstream/actions/workflows/ci.yml)
+
 **Run an AI coding agent autonomously across a whole multi-step workstream — safely.**
 
 One operator-launched **Terminal** session spawns **headless phase sessions** (one per
@@ -154,7 +156,10 @@ LICENSE                Apache-2.0
 - **Phase 4 — Self-improving loop (guarded)** — the agent proposes improvements to its own
   prompt templates/heuristics on a feature branch, operator-gated, with the **safety core
   frozen and untouchable** (see [SECURITY.md](SECURITY.md)).
-- **Phase 5 — Tests / CI** — run the pre-push hook test vectors and a CLI smoke test in CI.
+- **Phase 5 — Tests / CI** ✅ — GitHub Actions runs the suite + `autows verify-core` on
+  Ubuntu and Windows (Python 3.9/3.12). A **frozen safety-core checksum guard**
+  (`autows verify-core`, manifest `autows/safety_core.sha256`) fails on any drift to the
+  files implementing the safety invariants — the enforcement the self-improving loop relies on.
 
 ## License
 

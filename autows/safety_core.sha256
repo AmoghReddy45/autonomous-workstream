@@ -1,0 +1,11 @@
+# Frozen safety core — sha256 of LF-normalized content.
+# These files implement the safety invariants (SECURITY.md). A self-
+# improvement loop MUST NOT change them; `autows verify-core` and CI fail
+# on drift. Regenerate intentionally with `autows verify-core --update`
+# only after a reviewed change to a safety-core file.
+ba74eb4d795eaa6ea6b241e3ad2948a4ecc829cff92d20890a5f669e47cb9c86  hooks.py
+5c5638471bdfac0f5d28e4d75480f17a349372029012f4f92e30ab624e97e4ca  config.py
+23ae2f9a311bed9530286957cd3da9604364a24fa1ea2b5cedee34d01d1604c1  process.py
+c7dd61db619299633bf0bbc93db4da1308d96ce1514a5e517245b174e6f9bf39  audit.py
+99e4682e90e073196b728697f090bf3df580e1e702dd8ecca9a964a2a8345500  backends/base.py
+0f0cf0bfcf7b91c66d70bc1122d1b3d66bb0c21b4998c331e144bee53f596a01  safety_core.py

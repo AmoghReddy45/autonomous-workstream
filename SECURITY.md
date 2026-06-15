@@ -86,6 +86,11 @@ constraint is absolute:
   feature branch, **operator-gated** — never auto-applied to the running safety config.
 - The frozen-state guard fails any run in which the safety core has drifted.
 
+**Enforcement.** `autows verify-core` checksums the frozen files against a committed manifest
+(`autows/safety_core.sha256`); it runs in CI on every push and the spawn path refuses to run
+on drift. Changing a frozen file therefore requires a deliberate, reviewed manifest update
+(`autows verify-core --update`) — which a self-improvement session is instructed never to do.
+
 If you build on this project, preserve that boundary.
 
 ## Reporting a vulnerability
