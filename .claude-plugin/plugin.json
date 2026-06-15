@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "autonomous-workstream",
+  "displayName": "Autonomous Workstream",
+  "version": "0.1.0",
+  "description": "Run an AI coding agent autonomously across a whole multi-step workstream: one operator-launched Terminal session spawns headless phase sessions on safe feature branches, with a file-based Q&A channel and a structural rail that blocks unattended pushes to protected branches.",
+  "author": {
+    "name": "Amogh",
+    "email": "reddy.amogh2004@gmail.com"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/your-github-username/autonomous-workstream",
+  "repository": "https://github.com/your-github-username/autonomous-workstream",
+  "keywords": [
+    "autonomous",
+    "workstream",
+    "agent",
+    "orchestration",
+    "headless",
+    "claude-code",
+    "safety"
+  ]
+}

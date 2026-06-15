@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "autonomous-workstream",
+  "description": "Marketplace for the Autonomous Workstream plugin — safe, autonomous multi-step execution for AI coding agents.",
+  "owner": {
+    "name": "Amogh",
+    "email": "reddy.amogh2004@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "autonomous-workstream",
+      "description": "Run an AI coding agent autonomously across a whole multi-step workstream, with feature-branch-only safety and a file-based Q&A channel.",
+      "version": "0.1.0",
+      "category": "development",
+      "author": {
+        "name": "Amogh"
+      },
+      "source": {
+        "source": "github",
+        "repo": "your-github-username/autonomous-workstream"
+      },
+      "homepage": "https://github.com/your-github-username/autonomous-workstream"
+    }
+  ]
+}

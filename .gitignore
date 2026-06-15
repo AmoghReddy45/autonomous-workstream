@@ -1,0 +1,11 @@
+# Runtime artifacts of autonomous runs (audit log + Q&A inbox/outbox + lessons log).
+# These are produced inside a *consuming* project, not this repo, but ignore them
+# here too so demo/smoke-test runs never get committed.
+data/automation/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
