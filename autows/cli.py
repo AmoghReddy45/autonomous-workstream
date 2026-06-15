@@ -239,6 +239,13 @@ def cmd_improve(args) -> int:
         outcomes_summary=summary, lessons_text=lessons_text,
         frozen_files=frozen, branch=branch,
     )
+    if args.dry_run:
+        print("=== autows improve (dry run — nothing spawned) ===")
+        print(f"backend: {args.backend}   branch: {branch}")
+        print(f"outcomes: {summary}")
+        print()
+        _write_stdout(prompt)
+        return 0
     print(f"Spawning self-improvement session on branch {branch} "
           f"(operator-gated; will not reach main/dev).", file=sys.stderr)
     return _do_spawn(prompt, label, args.timeout, args.backend,
@@ -308,6 +315,8 @@ def build_parser() -> argparse.ArgumentParser:
                     help="how many recent log files / lessons to review")
     sp.add_argument("--branch-override", default="")
     sp.add_argument("--timeout", type=int, default=config.DEFAULT_PHASE_TIMEOUT_SECONDS)
+    sp.add_argument("--dry-run", action="store_true",
+                    help="print the outcomes + prompt the session would get, without spawning")
     sp.add_argument("--skip-core-check", action="store_true",
                     help="bypass frozen safety-core verification (NOT recommended)")
     sp.set_defaults(func=cmd_improve)
