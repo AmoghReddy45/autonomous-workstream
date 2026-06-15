@@ -86,8 +86,9 @@ into your project's `scripts/`. See
 Windows. Install it:
 
 ```
-pipx install git+https://github.com/AmoghReddy45/autonomous-workstream
-# or, from a clone:  pip install -e .
+pipx install autonomous-workstream                                          # from PyPI (once published)
+# or, latest from GitHub: pipx install git+https://github.com/AmoghReddy45/autonomous-workstream
+# or, from a clone:       pip install -e .
 ```
 
 Then, from inside your project (a git repo):
