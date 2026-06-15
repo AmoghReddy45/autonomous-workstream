@@ -10,6 +10,16 @@ HEADLESS_LOG_DIR = os.path.join(DATA_DIR, "headless_log")
 INBOX_DIR = os.path.join(DATA_DIR, "inbox")
 OUTBOX_DIR = os.path.join(DATA_DIR, "outbox")
 
+# Lessons memory (Phase 3). The raw log is a runtime artifact (gitignored under
+# DATA_DIR); the curated file is version-controlled knowledge the operator
+# reviews — keep it committed in the consuming project. Both overridable by env.
+RAW_LESSONS_LOG = os.environ.get(
+    "AUTOWS_LESSONS_LOG", os.path.join(DATA_DIR, "lessons_log.jsonl")
+)
+CURATED_LESSONS = os.environ.get(
+    "AUTOWS_LESSONS_FILE", os.path.join("docs", "journal", "LESSONS.md")
+)
+
 # Branches a headless session must never push to (the pre-push hook enforces it).
 PROTECTED_BRANCHES = ("main", "dev")
 

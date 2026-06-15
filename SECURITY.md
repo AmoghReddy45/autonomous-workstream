@@ -61,6 +61,18 @@ These are mitigated by scoping + review, not eliminated. Know them:
 8. **Frozen-state guard (if your project has one).** Any guard that refuses promotion on
    protected-file drift catches a session that oversteps its scope.
 
+## Lessons memory is part of the trust boundary
+
+The lessons memory (`autows lessons`, SPEC §8) is read by future autonomous sessions at
+bootstrap, which makes it a **prompt-injection surface**: anything in it becomes input to an
+agent running with permissions disabled. Two rules keep it safe:
+
+- **Curated lessons are operator-gated.** The curated file is version-controlled, so promoting
+  a lesson into it goes through normal code review. Review lessons as you would code.
+- **Never seed lessons from untrusted input.** Lessons should be written by your own sessions
+  about your own repo — not pasted from external issues, dependencies, or user-supplied text.
+  Treat the raw log as data, not instructions.
+
 ## The frozen safety core (important for the self-improving roadmap)
 
 A future phase lets the agent improve **its own prompt templates and heuristics** across

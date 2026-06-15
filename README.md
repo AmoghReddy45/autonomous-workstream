@@ -56,7 +56,7 @@ This is an early public release. Be honest about what works today:
 | Agent backend | Claude Code (`claude -p`) + Codex (`codex exec`) | more backends via the documented interface |
 | OS / runtime | Cross-platform `autows` CLI (Python 3.9+, zero deps); PowerShell scripts (legacy) | broaden the CI test matrix |
 | Packaging | Claude Code plugin + `pip`/`pipx` install | published marketplace + PyPI |
-| Learning | none (each session starts cold) | accumulating lessons + a guarded self-improving loop |
+| Learning | lessons memory (`autows lessons add/show`) — read at bootstrap, written at completion | a guarded self-improving loop |
 
 See [Roadmap](#roadmap).
 
@@ -98,6 +98,8 @@ autows phase --workstream rust --phase 2 --session-in-phase 1 \
     --gate-commands "cargo build && cargo test && cargo clippy -- -D warnings"
 autows answer --qfile data/automation/inbox/Q_<id>_001.json --answer "..." --rationale "..."
 autows spawn  --prompt "..." --label my-task   # low-level single session
+autows lessons show                            # read accumulated lessons (sessions do this at bootstrap)
+autows lessons add --category gotcha --text "protoc must be on PATH"   # record one for next time
 ```
 
 The command is `autows` (not `aws`, to avoid colliding with the Amazon CLI). It's
@@ -120,7 +122,7 @@ without Python can still use those scripts in
 
 ```
 .claude-plugin/        plugin.json + marketplace.json (Claude Code install)
-autows/                the cross-platform CLI (backend seam, process watchdog, hooks)
+autows/                the cross-platform CLI (backend seam, process watchdog, hooks, lessons)
   backends/            claude.py + codex.py + the Backend interface (add your own)
 pyproject.toml         packaging — `pipx install` gives the `autows` command
 tests/                 hook test vectors + process-watchdog smoke tests
@@ -146,9 +148,9 @@ LICENSE                Apache-2.0
 - **Phase 2 — Backends** ✅ — a Codex adapter (`--backend codex`) + the documented
   "add your own backend" interface ([`autows/backends/README.md`](autows/backends/README.md)).
   Codex has no subagent primitive, so its phase sessions self-execute (SPEC §6).
-- **Phase 3 — Lessons memory** — an accumulating, version-controlled `LESSONS.md` (+ raw
-  append-only log) read at session bootstrap, written at completion, curated at phase
-  boundaries. Inspired by autoresearch-style experiment journals.
+- **Phase 3 — Lessons memory** ✅ — `autows lessons add/show`: a raw append-only log plus a
+  curated, version-controlled `docs/journal/LESSONS.md`, read at session bootstrap, written at
+  completion, curated at phase boundaries. Inspired by autoresearch-style experiment journals.
 - **Phase 4 — Self-improving loop (guarded)** — the agent proposes improvements to its own
   prompt templates/heuristics on a feature branch, operator-gated, with the **safety core
   frozen and untouchable** (see [SECURITY.md](SECURITY.md)).

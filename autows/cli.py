@@ -14,7 +14,7 @@ import re
 import sys
 import time
 
-from . import audit, config, gitutil, hooks, prompts
+from . import audit, config, gitutil, hooks, lessons, prompts
 from .backends import available, get_backend
 
 
@@ -165,6 +165,24 @@ def cmd_answer(args) -> int:
     return 0
 
 
+def _split(csv):
+    return [s.strip() for s in csv.split(",") if s.strip()]
+
+
+def cmd_lessons_add(args) -> int:
+    rec = lessons.add(
+        text=args.text, category=args.category, session_id=args.session_id,
+        tags=_split(args.tags), files=_split(args.files),
+    )
+    print(f"Recorded lesson ({rec['category']}) to {config.RAW_LESSONS_LOG}")
+    return 0
+
+
+def cmd_lessons_show(args) -> int:
+    print(lessons.format_show(limit=args.limit))
+    return 0
+
+
 def cmd_install_hooks(args) -> int:
     git_root = gitutil.toplevel()
     if not git_root:
@@ -231,6 +249,19 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--show-only", action="store_true",
                     help="print the question for routing instead of answering")
     sp.set_defaults(func=cmd_answer)
+
+    sp = sub.add_parser("lessons", help="accumulated lessons memory (read / append)")
+    lsub = sp.add_subparsers(dest="lessons_cmd", required=True)
+    la = lsub.add_parser("add", help="append a lesson for future sessions")
+    la.add_argument("--text", required=True)
+    la.add_argument("--category", default="gotcha", choices=list(lessons.VALID_CATEGORIES))
+    la.add_argument("--session-id", default="")
+    la.add_argument("--tags", default="", help="comma-separated")
+    la.add_argument("--files", default="", help="comma-separated")
+    la.set_defaults(func=cmd_lessons_add)
+    ls = lsub.add_parser("show", help="print curated + recent raw lessons")
+    ls.add_argument("--limit", type=int, default=20)
+    ls.set_defaults(func=cmd_lessons_show)
 
     return p
 

@@ -131,11 +131,18 @@ contains at least: `session_id`, `sequence_num`, `answer`, `rationale`, `signed_
 **Audit log.** `headless_log/<session_id>.jsonl` — one `spawn` record and one `complete`
 record per the fields in S4.
 
-**Lessons memory (roadmap, Phase 3).** `lessons_log.jsonl` (append-only, raw, per session)
-plus a curated, version-controlled `LESSONS.md`. A phase session SHOULD read curated lessons
-at bootstrap and append raw lessons at completion; the Terminal SHOULD curate raw → promoted
-at phase boundaries. This is the pattern's analog of an autoresearch experiment journal: it
-lets knowledge compound across otherwise-fresh sessions without weakening the safety core.
+**Lessons memory.** Two layers: `data/automation/lessons_log.jsonl` (append-only, raw, per
+session, gitignored) plus a curated, version-controlled file (`docs/journal/LESSONS.md` by
+default). A phase session SHOULD read curated lessons at bootstrap (`autows lessons show`)
+and append raw lessons at completion (`autows lessons add --category <gotcha|pitfall|decision
+|pattern> --text "..."`); the Terminal SHOULD curate raw → promoted at phase boundaries
+(judgment: dedupe, promote durable lessons into the curated file). A raw record carries at
+least `timestamp_utc`, `category`, `text`, and (optionally) `session_id`, `tags`, `files`.
+
+This is the pattern's analog of an autoresearch experiment journal: it lets knowledge compound
+across otherwise-fresh sessions. Because the curated file is committed, it passes through human
+review — and it MUST be treated as part of the trust boundary (see SECURITY.md): a session
+ingests it, so it is a prompt-injection surface and must never be seeded from untrusted input.
 
 ## 9. Conformance
 

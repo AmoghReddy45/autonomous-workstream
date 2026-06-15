@@ -16,10 +16,13 @@ Pattern: Autonomous Workstream (skill autonomous-workstream) — file-based Q&A 
 
 === BOOTSTRAP ===
 1. Read the project's handoff / state docs (e.g. docs/journal/handoff.md) if present.
-2. Verify branch: $branch. Create off the current base if missing; if it exists,
+2. Read accumulated lessons so you don't repeat known mistakes: run
+   `autows lessons show` (or, if that command isn't available, read
+   docs/journal/LESSONS.md + data/automation/lessons_log.jsonl directly).
+3. Verify branch: $branch. Create off the current base if missing; if it exists,
    check it out and merge the base branch in first to pick up recent updates.
-3. Verify any project pre-flight / frozen-state guard is green before starting.
-4. Read the phase-specific guidance below.
+4. Verify any project pre-flight / frozen-state guard is green before starting.
+5. Read the phase-specific guidance below.
 
 === SCOPE ===
 $scope
@@ -31,6 +34,9 @@ $guidance
 $worker_step
 3. After all subtasks: write/update the session journal + project handoff +
    any workstream dashboard, and commit them.
+4. Record lessons for future sessions: for each gotcha, pitfall, or non-obvious
+   decision discovered this session, run
+   `autows lessons add --category <gotcha|pitfall|decision|pattern> --text "..."`.
 
 === Q&A PROTOCOL (when you hit a fork you can't resolve confidently) ===
 Default: if this session was told 'best-judgment mode', make the call, document
@@ -62,7 +68,7 @@ with the Q path, having committed clean pre-block work.
 === FINAL OUTPUT (to the Terminal) ===
 Status: COMPLETE | BLOCKED_AWAITING_ANSWER | DOORMAN_FAIL | ERROR
 Subtasks done / remaining; commits (SHAs); branch state; Q&A files created;
-frozen-state guard status on $branch; suggested next session.
+lessons added; frozen-state guard status on $branch; suggested next session.
 
 Begin now.
 """

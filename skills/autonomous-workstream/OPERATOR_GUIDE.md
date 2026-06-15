@@ -223,6 +223,32 @@ it routes per category.
 
 ---
 
+## 7.5 Lessons memory (compounding knowledge across runs)
+
+Each phase session gets a deliberately *fresh* context — great for quality, but
+it means learnings don't carry over on their own. The lessons memory fixes that:
+
+- **Raw log** — `data/automation/lessons_log.jsonl` (gitignored). Every session
+  appends what it learned at completion: `autows lessons add --category
+  <gotcha|pitfall|decision|pattern> --text "..."`.
+- **Curated file** — `docs/journal/LESSONS.md` (committed). The durable, deduped
+  knowledge, reviewed like code.
+- **Read at bootstrap** — sessions run `autows lessons show` so they don't repeat
+  known mistakes (the phase prompt already instructs this).
+
+**Your job at phase boundaries:** curate. Skim the raw log (`autows lessons
+show`), promote the durable, repo-specific lessons into `docs/journal/LESSONS.md`,
+drop the noise, and commit. This keeps the file from growing unbounded and is the
+pattern's analog of autoresearch "plateau/stuck detection." The kinds of things
+worth promoting are exactly the entries in TROUBLESHOOTING.md — off-PATH tools,
+flaky suites, hidden module couplings — captured automatically, per project.
+
+**Safety:** the curated file is read by future autonomous sessions, so treat it as
+part of the trust boundary (SECURITY.md) — review promotions, never seed lessons
+from untrusted input.
+
+---
+
 ## 8. Handling a morning report
 
 When a Terminal finishes (or hard-stops), it leaves a report. Check, in
