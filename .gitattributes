@@ -1,0 +1,11 @@
+# Normalize line endings across platforms. Shell scripts and git hooks MUST be
+# LF or they break on POSIX shells; force it so a Windows checkout can't corrupt them.
+* text=auto eol=lf
+
+# PowerShell is happy with either; keep the legacy scripts CRLF on Windows checkouts.
+*.ps1 text eol=crlf
+
+# Binaries (none yet, but future-proof).
+*.png binary
+*.jpg binary
+*.gif binary

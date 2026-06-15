@@ -54,8 +54,8 @@ This is an early public release. Be honest about what works today:
 | Area | Today (v0.1) | On the roadmap |
 | --- | --- | --- |
 | Agent backend | Claude Code (`claude -p`) | Codex + a documented backend interface |
-| OS / runtime | Windows / PowerShell scripts | One cross-platform CLI (Python) |
-| Packaging | Claude Code plugin (this repo) | published marketplace listing |
+| OS / runtime | Cross-platform `autows` CLI (Python 3.9+, zero deps); PowerShell scripts (legacy) | broaden the CI test matrix |
+| Packaging | Claude Code plugin + `pip`/`pipx` install | published marketplace + PyPI |
 | Learning | none (each session starts cold) | accumulating lessons + a guarded self-improving loop |
 
 See [Roadmap](#roadmap).
@@ -78,6 +78,33 @@ skills directory, and copy the scripts from `skills/autonomous-workstream/assets
 into your project's `scripts/`. See
 [`assets/SETUP.md`](skills/autonomous-workstream/assets/SETUP.md).
 
+## Using the CLI (cross-platform)
+
+`autows` is a zero-dependency Python CLI (3.9+) that works on macOS, Linux, and
+Windows. Install it:
+
+```
+pipx install git+https://github.com/AmoghReddy45/autonomous-workstream
+# or, from a clone:  pip install -e .
+```
+
+Then, from inside your project (a git repo):
+
+```
+autows install-hooks                         # one-time: install the pre-push safety hook
+autows phase --workstream rust --phase 2 --session-in-phase 1 \
+    --scope "Implement crate X ..." \
+    --guidance "doc refs; pre-baked decisions; best-judgment mode" \
+    --gate-commands "cargo build && cargo test && cargo clippy -- -D warnings"
+autows answer --qfile data/automation/inbox/Q_<id>_001.json --answer "..." --rationale "..."
+autows spawn  --prompt "..." --label my-task   # low-level single session
+```
+
+The command is `autows` (not `aws`, to avoid colliding with the Amazon CLI). It's
+the cross-platform replacement for the four PowerShell scripts; Windows users
+without Python can still use those scripts in
+`skills/autonomous-workstream/assets/scripts/`.
+
 ## Bootstrapping a project
 
 ~10 minutes, one-time per repo. Full steps in
@@ -93,6 +120,10 @@ into your project's `scripts/`. See
 
 ```
 .claude-plugin/        plugin.json + marketplace.json (Claude Code install)
+autows/                the cross-platform CLI (backend seam, process watchdog, hooks)
+  backends/            claude.py + the Backend interface (Codex slots in here)
+pyproject.toml         packaging — `pipx install` gives the `autows` command
+tests/                 hook test vectors + process-watchdog smoke tests
 skills/
   autonomous-workstream/
     SKILL.md           quick model + launch checklist + core commands
@@ -100,7 +131,7 @@ skills/
     TROUBLESHOOTING.md fixes for every failure mode observed
     assets/
       SETUP.md         bootstrap a new repo
-      scripts/         PowerShell scripts + embedded pre-push hook
+      scripts/         PowerShell scripts + embedded pre-push hook (legacy)
 SPEC.md                the tool-agnostic pattern (implement it on any backend)
 SECURITY.md            threat model + the controls that mitigate it
 LICENSE                Apache-2.0
@@ -109,8 +140,9 @@ LICENSE                Apache-2.0
 ## Roadmap
 
 - **Phase 0 — Foundation** ✅ — git, license, README, security model, spec, plugin packaging.
-- **Phase 1 — Cross-platform core** — consolidate the orchestration into one cross-platform
-  CLI with a backend seam; keep the bash pre-push hook; deprecate the `.ps1` scripts.
+- **Phase 1 — Cross-platform core** ✅ — the zero-dependency `autows` Python CLI with a
+  backend seam, a cross-platform process-tree-kill watchdog, and the bash pre-push hook;
+  the `.ps1` scripts are now legacy.
 - **Phase 2 — Backends** — a Codex adapter + a documented "add your own backend" interface.
 - **Phase 3 — Lessons memory** — an accumulating, version-controlled `LESSONS.md` (+ raw
   append-only log) read at session bootstrap, written at completion, curated at phase

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autonomous-workstream"
+version = "0.1.0"
+description = "Run an AI coding agent autonomously across a whole multi-step workstream, with feature-branch-only safety and a file-based Q&A channel."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+authors = [{ name = "Amogh Reddy", email = "amoghkr.reddy@gmail.com" }]
+keywords = ["autonomous", "workstream", "agent", "orchestration", "headless", "claude-code", "codex", "safety"]
+dependencies = []  # zero third-party dependencies, by design
+
+[project.urls]
+Homepage = "https://github.com/AmoghReddy45/autonomous-workstream"
+Repository = "https://github.com/AmoghReddy45/autonomous-workstream"
+
+# The console command is `autows`, NOT `aws` (that's the Amazon Web Services CLI).
+[project.scripts]
+autows = "autows.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["autows"]

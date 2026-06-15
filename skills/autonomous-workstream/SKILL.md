@@ -97,6 +97,11 @@ OPERATOR_GUIDE.md §"Autonomy modes".
 
 ## Core commands
 
+> Cross-platform: the same operations are available via the `autows` CLI on
+> macOS/Linux/Windows — `autows install-hooks`, `autows phase ...`,
+> `autows answer ...`, `autows spawn ...` (see the repo README). The PowerShell
+> examples below are the Windows-native equivalent.
+
 Spawn a phase session (the Terminal runs this, in background):
 ```powershell
 .\scripts\spawn_phase_session.ps1 `
@@ -105,6 +110,15 @@ Spawn a phase session (the Terminal runs this, in background):
     -PhaseSpecificGuidance "<doc refs, prior commits, pre-baked decisions>" `
     -WorkerType "<subagent type or general-purpose>" `
     -GateCommands "<the project's build/test/lint gates>"
+```
+
+Cross-platform equivalent:
+```bash
+autows phase --workstream "<name>" --phase <N> --session-in-phase <K> \
+    --scope "<1-3 sentence bounded scope>" \
+    --guidance "<doc refs, prior commits, pre-baked decisions>" \
+    --worker-type "<subagent type or general-purpose>" \
+    --gate-commands "<the project's build/test/lint gates>"
 ```
 
 Inject an off-PATH tool for the headless child (do NOT edit scripts/):

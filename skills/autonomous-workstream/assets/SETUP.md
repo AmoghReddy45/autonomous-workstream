@@ -3,6 +3,13 @@
 One-time setup to make a git project ready for autonomous workstream
 runs. ~10 minutes.
 
+> **Cross-platform path (recommended):** instead of the PowerShell scripts
+> below, install the `autows` CLI (`pipx install git+https://github.com/AmoghReddy45/autonomous-workstream`)
+> and use `autows install-hooks`, `autows phase ...`, `autows answer ...`,
+> `autows spawn ...`. It works on macOS/Linux/Windows with zero dependencies and
+> the safety model is identical. The steps below are the Windows-native /
+> no-Python path. See the repo README, "Using the CLI".
+
 ## 0. Prerequisites
 
 - Claude Code CLI on PATH (`claude --version`).
