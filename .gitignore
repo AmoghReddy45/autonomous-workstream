@@ -3,6 +3,14 @@
 # here too so demo/smoke-test runs never get committed.
 data/automation/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db
