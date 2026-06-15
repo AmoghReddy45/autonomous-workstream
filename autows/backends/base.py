@@ -23,6 +23,10 @@ class SpawnResult:
 class Backend:
     name = "base"
 
+    # Whether this backend can spawn nested subagents (Workers, SPEC section 6).
+    # If False, the phase session does the worker's deliverables itself.
+    supports_subagents = True
+
     def command(self):
         """argv to launch the agent non-interactively, reading the prompt from stdin."""
         raise NotImplementedError

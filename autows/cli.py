@@ -100,11 +100,13 @@ def cmd_phase(args) -> int:
     session_id = (f"{args.workstream}-phase-{args.phase}"
                   f"-session-{args.session_in_phase}-{date}")
     branch = args.branch_override or f"{args.branch_prefix}/{args.workstream}-phase-{args.phase}"
+    backend = get_backend(args.backend)
     prompt = prompts.build_phase_prompt(
         session_id=session_id, workstream=args.workstream, phase=args.phase,
         session_in_phase=args.session_in_phase, branch=branch, scope=args.scope,
         guidance=args.guidance, worker_type=args.worker_type,
         gate_commands=args.gate_commands,
+        supports_subagents=backend.supports_subagents,
     )
     print(f"Spawning phase session: {session_id} (branch: {branch}, "
           f"timeout: {args.timeout}s)", file=sys.stderr)

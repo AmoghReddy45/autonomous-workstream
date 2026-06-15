@@ -53,7 +53,7 @@ This is an early public release. Be honest about what works today:
 
 | Area | Today (v0.1) | On the roadmap |
 | --- | --- | --- |
-| Agent backend | Claude Code (`claude -p`) | Codex + a documented backend interface |
+| Agent backend | Claude Code (`claude -p`) + Codex (`codex exec`) | more backends via the documented interface |
 | OS / runtime | Cross-platform `autows` CLI (Python 3.9+, zero deps); PowerShell scripts (legacy) | broaden the CI test matrix |
 | Packaging | Claude Code plugin + `pip`/`pipx` install | published marketplace + PyPI |
 | Learning | none (each session starts cold) | accumulating lessons + a guarded self-improving loop |
@@ -121,7 +121,7 @@ without Python can still use those scripts in
 ```
 .claude-plugin/        plugin.json + marketplace.json (Claude Code install)
 autows/                the cross-platform CLI (backend seam, process watchdog, hooks)
-  backends/            claude.py + the Backend interface (Codex slots in here)
+  backends/            claude.py + codex.py + the Backend interface (add your own)
 pyproject.toml         packaging — `pipx install` gives the `autows` command
 tests/                 hook test vectors + process-watchdog smoke tests
 skills/
@@ -143,7 +143,9 @@ LICENSE                Apache-2.0
 - **Phase 1 — Cross-platform core** ✅ — the zero-dependency `autows` Python CLI with a
   backend seam, a cross-platform process-tree-kill watchdog, and the bash pre-push hook;
   the `.ps1` scripts are now legacy.
-- **Phase 2 — Backends** — a Codex adapter + a documented "add your own backend" interface.
+- **Phase 2 — Backends** ✅ — a Codex adapter (`--backend codex`) + the documented
+  "add your own backend" interface ([`autows/backends/README.md`](autows/backends/README.md)).
+  Codex has no subagent primitive, so its phase sessions self-execute (SPEC §6).
 - **Phase 3 — Lessons memory** — an accumulating, version-controlled `LESSONS.md` (+ raw
   append-only log) read at session bootstrap, written at completion, curated at phase
   boundaries. Inspired by autoresearch-style experiment journals.

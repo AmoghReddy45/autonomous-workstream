@@ -1,9 +1,11 @@
-"""Backend registry. Phase 2 adds a Codex backend here."""
+"""Backend registry. Add a new backend by importing + registering it here."""
 from .base import Backend, SpawnResult
 from .claude import ClaudeBackend
+from .codex import CodexBackend
 
 _BACKENDS = {
     ClaudeBackend.name: ClaudeBackend,
+    CodexBackend.name: CodexBackend,
 }
 
 

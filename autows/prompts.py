@@ -3,6 +3,9 @@
 Builds the phase-shaped prompt (with the file-based Q&A protocol baked in) that
 a Terminal hands to a headless phase session. Uses string.Template ($name) so
 the embedded JSON braces don't collide with placeholder syntax.
+
+The worker step adapts to the backend: backends with a subagent primitive spawn
+Workers; backends without one (SPEC section 6) do the work in-session.
 """
 from string import Template
 
@@ -25,10 +28,7 @@ $guidance
 
 === WORKFLOW ===
 1. Decompose the scope into worker-sized subtasks (2-4 hours each, one deliverable).
-2. Per subtask: spawn a $worker_type subagent with the four-field contract
-   (objective / output format / tools+sources / boundaries). Review its diff.
-   Run gates: $gate_commands. All must pass before commit. Commit incrementally
-   on $branch with a descriptive message.
+$worker_step
 3. After all subtasks: write/update the session journal + project handoff +
    any workstream dashboard, and commit them.
 
@@ -68,11 +68,29 @@ Begin now.
 """
 )
 
+_WORKER_STEP_SUBAGENT = (
+    "2. Per subtask: spawn a {worker_type} subagent with the four-field contract\n"
+    "   (objective / output format / tools+sources / boundaries). Review its diff.\n"
+    "   Run gates: {gate_commands}. All must pass before commit. Commit incrementally\n"
+    "   on {branch} with a descriptive message."
+)
+
+_WORKER_STEP_SELF = (
+    "2. Per subtask: complete it yourself under the four-field discipline (objective /\n"
+    "   output format / tools+sources / boundaries) — this backend has no subagent\n"
+    "   primitive. After each, run gates: {gate_commands}. All must pass before commit.\n"
+    "   Commit incrementally on {branch} with a descriptive message."
+)
+
 
 def build_phase_prompt(
     *, session_id, workstream, phase, session_in_phase, branch, scope,
-    guidance, worker_type, gate_commands,
+    guidance, worker_type, gate_commands, supports_subagents=True,
 ) -> str:
+    template = _WORKER_STEP_SUBAGENT if supports_subagents else _WORKER_STEP_SELF
+    worker_step = template.format(
+        worker_type=worker_type, gate_commands=gate_commands, branch=branch,
+    )
     return _PHASE.substitute(
         session_id=session_id,
         workstream=workstream,
@@ -81,6 +99,6 @@ def build_phase_prompt(
         branch=branch,
         scope=scope,
         guidance=guidance or "",
-        worker_type=worker_type,
         gate_commands=gate_commands,
+        worker_step=worker_step,
     )
