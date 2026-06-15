@@ -18,6 +18,22 @@ from . import audit, config, gitutil, hooks, lessons, outcomes, prompts, safety_
 from .backends import available, get_backend
 
 
+def _write_stdout(text: str) -> None:
+    """Write to stdout surviving consoles that can't encode the text — e.g. a
+    Windows cp1252 stdout vs an agent's output containing '✓'. (Found by
+    dogfooding: an unencodable char in child output crashed the wrapper.)"""
+    try:
+        sys.stdout.write(text)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        data = text.encode(enc, errors="replace")
+        buf = getattr(sys.stdout, "buffer", None)
+        if buf is not None:
+            buf.write(data)
+        else:
+            sys.stdout.write(data.decode(enc, errors="replace"))
+
+
 def _read_prompt(args) -> str:
     if args.prompt is not None:
         return args.prompt
@@ -98,9 +114,9 @@ def _do_spawn(prompt: str, label: str, timeout: int, backend_name: str,
         "timed_out": result.timed_out,
     })
 
-    sys.stdout.write(output)
+    _write_stdout(output)
     if not output.endswith("\n"):
-        sys.stdout.write("\n")
+        _write_stdout("\n")
     print("---")
     print(f"Headless session {session_id} complete. Duration: {duration}s. "
           f"Exit: {result.exit_code}.")
@@ -354,5 +370,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
+    # Make output robust to console encodings (Windows cp1252 can't encode the
+    # non-ASCII an agent emits). Redirected output becomes UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     args = build_parser().parse_args(argv)
     return args.func(args)
