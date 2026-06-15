@@ -62,10 +62,10 @@ See [Roadmap](#roadmap).
 
 ## Install (Claude Code plugin)
 
-Once this repo is public on GitHub (replace `your-github-username`):
+Once this repo is public on GitHub:
 
 ```
-/plugin marketplace add your-github-username/autonomous-workstream
+/plugin marketplace add AmoghReddy45/autonomous-workstream
 /plugin install autonomous-workstream@autonomous-workstream
 /reload-plugins
 ```

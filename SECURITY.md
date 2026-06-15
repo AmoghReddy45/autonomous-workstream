@@ -78,6 +78,6 @@ If you build on this project, preserve that boundary.
 
 ## Reporting a vulnerability
 
-Please report security issues privately to **reddy.amogh2004@gmail.com** rather than opening
+Please report security issues privately to **amoghkr.reddy@gmail.com** rather than opening
 a public issue. Include reproduction steps and the impact you observed. (Maintainers: update
 this address to a dedicated security contact before wide distribution.)
