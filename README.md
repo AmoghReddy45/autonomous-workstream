@@ -58,7 +58,7 @@ This is an early public release. Be honest about what works today:
 | Agent backend | Claude Code (`claude -p`) + Codex (`codex exec`) | more backends via the documented interface |
 | OS / runtime | Cross-platform `autows` CLI (Python 3.9+, zero deps); PowerShell scripts (legacy) | broaden the CI test matrix |
 | Packaging | Claude Code plugin + `pip`/`pipx` install | published marketplace + PyPI |
-| Learning | lessons memory (`autows lessons add/show`) — read at bootstrap, written at completion | a guarded self-improving loop |
+| Learning | lessons memory + guarded self-improving loop (`autows improve`) | metric-driven scoring of improvements |
 
 See [Roadmap](#roadmap).
 
@@ -102,7 +102,22 @@ autows answer --qfile data/automation/inbox/Q_<id>_001.json --answer "..." --rat
 autows spawn  --prompt "..." --label my-task   # low-level single session
 autows lessons show                            # read accumulated lessons (sessions do this at bootstrap)
 autows lessons add --category gotcha --text "protoc must be on PATH"   # record one for next time
+autows verify-core                             # check the frozen safety core hasn't drifted
+autows improve                                 # guarded self-improvement session (operator-gated)
 ```
+
+### The self-improving loop
+
+`autows improve` is the autoresearch loop pointed at the agent's *own instructions*. It reads
+recent run outcomes (timeouts, non-zero exits, hard-stops from the audit log) plus accumulated
+lessons, then spawns a session that proposes improvements to its prompt templates/heuristics —
+on a `feature/self-improve-*` branch only. Two rails make this safe:
+
+1. **Frozen safety core.** The files implementing the safety invariants are checksummed
+   (`autows verify-core`); the improver is told never to touch them and the spawn path refuses
+   to run on drift. So self-improvement can change *behaviour* but never *safety*.
+2. **Operator-gated.** Output stays on a feature branch (the pre-push hook blocks main/dev);
+   you review and merge. Nothing self-applies.
 
 The command is `autows` (not `aws`, to avoid colliding with the Amazon CLI). It's
 the cross-platform replacement for the four PowerShell scripts; Windows users
@@ -153,9 +168,11 @@ LICENSE                Apache-2.0
 - **Phase 3 — Lessons memory** ✅ — `autows lessons add/show`: a raw append-only log plus a
   curated, version-controlled `docs/journal/LESSONS.md`, read at session bootstrap, written at
   completion, curated at phase boundaries. Inspired by autoresearch-style experiment journals.
-- **Phase 4 — Self-improving loop (guarded)** — the agent proposes improvements to its own
-  prompt templates/heuristics on a feature branch, operator-gated, with the **safety core
-  frozen and untouchable** (see [SECURITY.md](SECURITY.md)).
+- **Phase 4 — Self-improving loop (guarded)** ✅ — `autows improve` spawns a session that
+  reads recent run outcomes + lessons and proposes improvements to its own prompt
+  templates/heuristics on a `feature/self-improve-*` branch — operator-gated, with the
+  **safety core frozen and untouchable** (`autows verify-core` must stay green; see
+  [SECURITY.md](SECURITY.md)).
 - **Phase 5 — Tests / CI** ✅ — GitHub Actions runs the suite + `autows verify-core` on
   Ubuntu and Windows (Python 3.9/3.12). A **frozen safety-core checksum guard**
   (`autows verify-core`, manifest `autows/safety_core.sha256`) fails on any drift to the

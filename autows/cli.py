@@ -14,7 +14,7 @@ import re
 import sys
 import time
 
-from . import audit, config, gitutil, hooks, lessons, prompts, safety_core
+from . import audit, config, gitutil, hooks, lessons, outcomes, prompts, safety_core
 from .backends import available, get_backend
 
 
@@ -29,8 +29,9 @@ def _read_prompt(args) -> str:
     raise SystemExit("ERROR: provide a prompt via --prompt, --prompt-file, or stdin.")
 
 
-def _do_spawn(prompt: str, label: str, timeout: int, backend_name: str) -> int:
-    """Shared spawn path used by both `spawn` and `phase`."""
+def _do_spawn(prompt: str, label: str, timeout: int, backend_name: str,
+              skip_core_check: bool = False) -> int:
+    """Shared spawn path used by `spawn`, `phase`, and `improve`."""
     if not gitutil.inside_work_tree():
         print("ERROR: not inside a git work tree. cd to the project root first.",
               file=sys.stderr)
@@ -45,6 +46,24 @@ def _do_spawn(prompt: str, label: str, timeout: int, backend_name: str) -> int:
         print("ERROR: pre-push safety hook not installed. Run `autows install-hooks` "
               "first.", file=sys.stderr)
         return 1
+
+    # Refuse to spawn if the frozen safety core has drifted (SPEC S7). A missing
+    # manifest can't be verified, so warn rather than block.
+    if not skip_core_check:
+        manifest = safety_core.load_manifest()
+        if manifest:
+            ok, drift = safety_core.verify_against(manifest)
+            if not ok:
+                print("ERROR: frozen safety core failed verification — refusing to "
+                      "spawn.", file=sys.stderr)
+                for rel, _exp, _act in drift:
+                    print(f"  drift: {rel}", file=sys.stderr)
+                print("Run `autows verify-core` for details. --skip-core-check overrides "
+                      "(NOT recommended).", file=sys.stderr)
+                return 1
+        else:
+            print("WARNING: no frozen-core manifest found; skipping core verification.",
+                  file=sys.stderr)
 
     backend = get_backend(backend_name)
     audit.ensure_dirs()
@@ -92,7 +111,8 @@ def _do_spawn(prompt: str, label: str, timeout: int, backend_name: str) -> int:
 
 
 def cmd_spawn(args) -> int:
-    return _do_spawn(_read_prompt(args), args.label, args.timeout, args.backend)
+    return _do_spawn(_read_prompt(args), args.label, args.timeout, args.backend,
+                     skip_core_check=args.skip_core_check)
 
 
 def cmd_phase(args) -> int:
@@ -110,7 +130,8 @@ def cmd_phase(args) -> int:
     )
     print(f"Spawning phase session: {session_id} (branch: {branch}, "
           f"timeout: {args.timeout}s)", file=sys.stderr)
-    return _do_spawn(prompt, session_id, args.timeout, args.backend)
+    return _do_spawn(prompt, session_id, args.timeout, args.backend,
+                     skip_core_check=args.skip_core_check)
 
 
 def cmd_answer(args) -> int:
@@ -183,6 +204,31 @@ def cmd_lessons_show(args) -> int:
     return 0
 
 
+def cmd_improve(args) -> int:
+    # Gate: refuse to even build a self-improvement session if the core is unverified.
+    ok, _drift = safety_core.verify()
+    if not ok:
+        print("ERROR: frozen safety core not verified; resolve before self-improvement.",
+              file=sys.stderr)
+        print("Run `autows verify-core` for details.", file=sys.stderr)
+        return 1
+
+    summary = outcomes.format_summary(outcomes.summarize_recent(limit=args.window))
+    lessons_text = lessons.format_show(limit=args.window)
+    frozen = ["autows/" + r.replace(os.sep, "/") for r in safety_core.FROZEN_FILES]
+    date = time.strftime("%Y%m%d-%H%M%S")
+    branch = args.branch_override or f"feature/self-improve-{date}"
+    label = f"self-improve-{date}"
+    prompt = prompts.build_improve_prompt(
+        outcomes_summary=summary, lessons_text=lessons_text,
+        frozen_files=frozen, branch=branch,
+    )
+    print(f"Spawning self-improvement session on branch {branch} "
+          f"(operator-gated; will not reach main/dev).", file=sys.stderr)
+    return _do_spawn(prompt, label, args.timeout, args.backend,
+                     skip_core_check=args.skip_core_check)
+
+
 def cmd_verify_core(args) -> int:
     if args.update:
         path = safety_core.write_manifest()
@@ -239,6 +285,17 @@ def build_parser() -> argparse.ArgumentParser:
                     help="regenerate the manifest after a reviewed safety-core change")
     sp.set_defaults(func=cmd_verify_core)
 
+    sp = sub.add_parser("improve",
+                        help="run a guarded, operator-gated self-improvement session")
+    sp.add_argument("--backend", default="claude", choices=available())
+    sp.add_argument("--window", type=int, default=20,
+                    help="how many recent log files / lessons to review")
+    sp.add_argument("--branch-override", default="")
+    sp.add_argument("--timeout", type=int, default=config.DEFAULT_PHASE_TIMEOUT_SECONDS)
+    sp.add_argument("--skip-core-check", action="store_true",
+                    help="bypass frozen safety-core verification (NOT recommended)")
+    sp.set_defaults(func=cmd_improve)
+
     sp = sub.add_parser("spawn", help="spawn a low-level headless session")
     g = sp.add_mutually_exclusive_group()
     g.add_argument("--prompt", help="the prompt text")
@@ -248,6 +305,8 @@ def build_parser() -> argparse.ArgumentParser:
                     help="wall-clock timeout in seconds")
     sp.add_argument("--backend", default="claude", choices=available(),
                     help="agent backend")
+    sp.add_argument("--skip-core-check", action="store_true",
+                    help="bypass frozen safety-core verification (NOT recommended)")
     sp.set_defaults(func=cmd_spawn)
 
     sp = sub.add_parser("phase", help="spawn a phase session (prompt is built for you)")
@@ -263,6 +322,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--branch-override", default="")
     sp.add_argument("--timeout", type=int, default=config.DEFAULT_PHASE_TIMEOUT_SECONDS)
     sp.add_argument("--backend", default="claude", choices=available())
+    sp.add_argument("--skip-core-check", action="store_true",
+                    help="bypass frozen safety-core verification (NOT recommended)")
     sp.set_defaults(func=cmd_phase)
 
     sp = sub.add_parser("answer", help="answer (or show) a phase session's question")

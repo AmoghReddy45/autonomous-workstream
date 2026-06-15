@@ -89,6 +89,58 @@ _WORKER_STEP_SELF = (
 )
 
 
+_IMPROVE = Template(
+    """You are an autonomous SELF-IMPROVEMENT session for the Autonomous Workstream tool.
+Goal: propose and apply improvements to the agent's OWN prompt templates and operating
+heuristics so future runs have fewer hard-stops, fewer gate reverts, and faster
+time-to-green. This is the autoresearch loop pointed at the agent's own instructions,
+measured against real run outcomes.
+
+=== INPUTS ===
+Recent run outcomes: $outcomes_summary
+
+Accumulated lessons:
+$lessons_text
+
+=== YOU MAY CHANGE (improvable surface) ===
+- Prompt templates and heuristics, e.g. autows/prompts.py and project docs
+  (docs/journal/HEURISTICS.md, the curated docs/journal/LESSONS.md).
+- Any NON-frozen file. Prefer the smallest change that addresses an observed problem.
+
+=== YOU MUST NOT CHANGE (FROZEN SAFETY CORE) ===
+$frozen_list
+After EVERY edit, run `autows verify-core` — it MUST print OK. If it reports drift,
+revert until it is green. NEVER run `autows verify-core --update`.
+
+=== PROCESS ===
+1. Switch to branch: $branch (create off the current base).
+2. From the outcomes + lessons, pick 1-3 concrete, justified improvements. For each,
+   name the problem it addresses and the metric it should move.
+3. Apply edits to improvable files ONLY. Run `autows verify-core` (must be OK) and the
+   test suite if present (e.g. `python -m unittest discover -s tests`).
+4. Commit on $branch with a message explaining each change + its expected effect.
+5. DO NOT push to main/dev (the pre-push hook blocks it). The OPERATOR reviews and
+   merges — this loop is operator-gated by design.
+
+=== FINAL OUTPUT (to the operator) ===
+Status: COMPLETE | NOTHING_TO_IMPROVE | BLOCKED | ERROR
+Per change: file, what + why, metric targeted. verify-core status. Branch + commit
+SHAs. Anything you deliberately did NOT change, and why.
+
+Begin now.
+"""
+)
+
+
+def build_improve_prompt(*, outcomes_summary, lessons_text, frozen_files, branch) -> str:
+    return _IMPROVE.substitute(
+        outcomes_summary=outcomes_summary,
+        lessons_text=lessons_text or "(none yet)",
+        frozen_list="\n".join(f"- {f}" for f in frozen_files),
+        branch=branch,
+    )
+
+
 def build_phase_prompt(
     *, session_id, workstream, phase, session_in_phase, branch, scope,
     guidance, worker_type, gate_commands, supports_subagents=True,

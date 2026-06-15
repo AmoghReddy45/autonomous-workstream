@@ -249,6 +249,26 @@ from untrusted input.
 
 ---
 
+## 7.6 Self-improvement (operator-gated)
+
+`autows improve` closes the loop: it reads recent run outcomes (from the audit
+log) + accumulated lessons and spawns a session that proposes improvements to the
+agent's own prompt templates/heuristics. It is deliberately constrained:
+
+- Edits land on a `feature/self-improve-<timestamp>` branch only; the pre-push
+  hook keeps them off main/dev. **You review and merge** — nothing self-applies.
+- The improver may change *behaviour* (prompts, heuristics, non-frozen files) but
+  not *safety*: the frozen core is checksummed, the session is told never to touch
+  it, and `autows verify-core` must stay green (the spawn path refuses on drift).
+
+Run it occasionally (e.g. after a batch of phases), then review the branch like
+any PR: does each change name a real problem from the outcomes/lessons and a
+metric it should move? Merge the good ones; discard the rest. Do NOT widen the
+improvable surface to the frozen core, and never `autows verify-core --update` to
+"fix" a self-improvement diff — that would defeat the guard.
+
+---
+
 ## 8. Handling a morning report
 
 When a Terminal finishes (or hard-stops), it leaves a report. Check, in

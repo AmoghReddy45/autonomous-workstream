@@ -149,3 +149,17 @@ ingests it, so it is a prompt-injection surface and must never be seeded from un
 An implementation is **conformant** if it satisfies S1–S7, provides the §5 backend interface,
 and implements the §8 Q&A and audit protocols. It is **safety-conformant** (the minimum bar
 for unattended use) if at least S1–S6 hold with origin-side protection (S2) actually enabled.
+
+## 10. Self-improvement (optional extension)
+
+An implementation MAY let the agent improve its own prompt templates/heuristics across runs
+(the autoresearch loop pointed at its own instructions). If it does, it MUST:
+
+- Restrict edits to the **improvable surface** (non-safety-critical files) and forbid changes
+  to the frozen safety core (S7), enforced by an integrity check (reference: `autows
+  verify-core` against a committed checksum manifest) that the spawn path consults.
+- Stage edits on a feature branch and require human review before they take effect (S6) — no
+  self-application to the running configuration.
+- Drive proposals from real signal (run outcomes + lessons), not unconstrained rewriting.
+
+The reference implementation provides this as `autows improve`.
